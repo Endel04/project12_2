@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         Button btnInit = findViewById(R.id.btn_init);
         Button btnInput = findViewById(R.id.btn_input);
         Button btnSearch = findViewById(R.id.btn_search);
+        Button btnUpdate = findViewById(R.id.btn_update);
+        Button btnDelete = findViewById(R.id.btn_delete);
 
         dbHelper = new MyDBHelper(this);
         btnInit.setOnClickListener(new View.OnClickListener() {
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
                 db.close();
             }
         });
+
         btnInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,10 +72,47 @@ public class MainActivity extends AppCompatActivity {
                 db.close();
             }
         });
+
+        btnUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db = dbHelper.getWritableDatabase();
+                db.execSQL("update groupTB set count = " + editCount.getText().toString() + " where name='"+ editName.getText().toString() +"';");
+                selectDB();
+                db.close();
+            }
+        });
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                db = dbHelper.getWritableDatabase();
+                db.execSQL("delete from groupTB where name='"+editName.getText().toString()+"';");
+                selectDB();
+                db.close();
+            }
+        });
+    }
+
+    public void selectDB() {
+        db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("select * from groupTB;", null);
+        String strName = "그룹 이름\r\n_________\r\n";
+        String strCount = "인원수\r\n_________\r\n";
+
+        while(cursor.moveToNext()) {
+            strName += cursor.getString(0) + "\r\n";
+            strCount += cursor.getInt(1)  + "\r\n";
+        } //end of while
+
+        editNameResult.setText(strName);
+        editCountResult.setText(strCount);
+
+        cursor.close();
+        db.close();
     }
 
     public class MyDBHelper extends SQLiteOpenHelper {
-
         public MyDBHelper(Context context) {
             super(context, "groupDB", null, 1);
         }
